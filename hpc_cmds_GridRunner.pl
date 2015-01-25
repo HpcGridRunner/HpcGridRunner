@@ -17,7 +17,15 @@ my $usage = <<_EOUSAGE_;
 #  -c <string>        file containing list of commands
 #  --grid_conf|G <string>   grid config file
 #
+# Optional:
+#  
+#  --parafly          if any grid commands fail on the grid, try rerunning
+#                     them locally using ParaFly (second chance to succeed).
+#                     This requires that ParaFly be installed and in your PATH
+#                     Get ParaFly here: http://parafly.sourceforge.net/
+#
 ####################################################################
+
 
 _EOUSAGE_
 
@@ -27,12 +35,15 @@ _EOUSAGE_
 my $grid_conf_file;
 my $cmd_file;
 my $help_flag;
+my $parafly_flag = 0;
 
 &GetOptions ( 'h' => \$help_flag,
 			  'c=s' => \$cmd_file,
 		
               'grid_conf|G=s' => \$grid_conf_file,
              
+              'parafly' => \$parafly_flag,
+
               );
 
 
@@ -42,6 +53,10 @@ unless ($cmd_file && $grid_conf_file) {
 
 if ($help_flag) {
 	die $usage;
+}
+
+if ($parafly_flag) {
+    $HPC::GridRunner::PARAFLY_FLAG = 1;
 }
 
 
