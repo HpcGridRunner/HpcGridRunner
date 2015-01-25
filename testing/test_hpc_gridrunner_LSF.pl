@@ -9,6 +9,11 @@ use HPC::GridRunner;
 
 my $config_file = "$FindBin::Bin/../hpc_conf/BroadInst_LSF.test.conf";
 
+if (@ARGV) {
+    $HPC::GridRunner::PARAFLY_FLAG = 1;
+}
+
+
 main: {
 
     my @cmds;

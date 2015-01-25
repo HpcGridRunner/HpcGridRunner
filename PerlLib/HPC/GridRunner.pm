@@ -209,7 +209,10 @@ sub run_parafly {
     my $ret = system($cmd);
 
     if ($ret) {
-        die "\n\nError, cmd: $cmd died with ret: $ret.\n\nSee $cmds_file_for_parafly.FAILED_DURING_PARAFLY for final set of commands that could not be executed successfully.\n\n";
+        die "\n\nError, cmd: $cmd died with ret: $ret.\n\n"
+            . "###########\n"
+            . "## See $cmds_file_for_parafly.FAILED_DURING_PARAFLY for final set of commands that could not be executed successfully.\n"
+            . "###########\n\n\n";
     }
     
     return(0);
