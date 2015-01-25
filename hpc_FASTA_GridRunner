@@ -23,7 +23,9 @@ my $usage =  <<_EOH_;
 #
 #   --cmd_template|T <string>      program command line template:   eg. "/path/to/prog [opts] __QUERY_FILE__ [other opts]"
 #
-#   --seqs_per_bin|N <int>                      number of sequences per partition.
+#  --grid_conf|G <string>          grid config file (see hpc_conf/ for examples)
+#
+#   --seqs_per_bin|N <int>         number of sequences per partition.
 # 
 #   --out_dir|O <string>           output directory 
 #
@@ -47,26 +49,32 @@ my $help = 0;
 my $CMDS_ONLY = 0;
 my $out_dir;
 my $prep_only_flag = 0;
+my $grid_conf_file;
 
 &GetOptions('query_fasta|Q=s' => \$query_fasta_file,
             'cmd_template|T=s' => \$program_cmd_template,
             'seqs_per_bin|N=i' => \$bin_size,
             'out_dir|O=s' => \$out_dir,
             'prep_only|X' => \$prep_only_flag,
+            'grid_conf|G=s' => \$grid_conf_file,
+            
+
+            'help|h' => \$help,
+
     );
 
 
 
-if ($opt_h) {
+if ($help) {
     die $usage;
 }
 
-unless ($query_fasta_file && $program_cmd_template && $bin_size && $out_dir) {
+unless ($query_fasta_file && $program_cmd_template && $bin_size && $out_dir && $grid_conf_file) {
     die $usage;
 }
 
-unless ($queryFile =~ /^\//) {
-    $queryFile = cwd() . "/$queryFile";
+unless ($query_fasta_file =~ /^\//) {
+    $query_fasta_file = cwd() . "/$query_fasta_file";
 }
 
 
@@ -77,7 +85,7 @@ unless ($program_cmd_template =~ /__QUERY_FILE__/) {
 
 ## Create files to search
 
-my $fastaReader = new Fasta_reader($queryFile);
+my $fastaReader = new Fasta_reader($query_fasta_file);
 
 my @searchFileList;
 
@@ -90,8 +98,7 @@ my $bindir = "$out_dir/grp_" . sprintf ("%04d", $current_bin);
 mkdir ($bindir) or die "Error, cannot mkdir $bindir";
 
 
-
-while (my $fastaSet = &get_next_fasta_entries($fastaReader, $num_seqs_per_job) ) {
+while (my $fastaSet = &get_next_fasta_entries($fastaReader, $bin_size) ) {
     
 	$count++;
 	
@@ -140,42 +147,39 @@ if  ($numFiles) {
 	
     @cmds = shuffle(@cmds);
 
-    my $cmds_per_node;
-    if ($CMDS_PER_NODE) {
-        $cmds_per_node = $CMDS_PER_NODE;
-    }
-    else {
-        $cmds_per_node = int ( scalar(@cmds) / 400); # split job across complete set of nodes available.
-        if ($cmds_per_node < 1) {
-            # use 10 as default.
-            $cmds_per_node = 1;
-        }
-    }
-    
+    my $cmd_file = "$out_dir.cmds";
 
-	open (my $fh, ">cmds.list") or die $!;
+	open (my $fh, ">$cmd_file") or die $!;
 	foreach my $cmd (@cmds) {
 		print $fh "$cmd\n";
 	}
 	close $fh;
 	
-	unless ($CMDS_ONLY) {
-		my $bsubber = new Bsub({cmds=>\@cmds,
-								log_dir => $out_dir,
-								cmds_per_node => $cmds_per_node,
-								queue => $queue,
-								memory => $memory,
-							}
-			);
-		
-		$bsubber->bsub_jobs();
-		
-	}
+    if ($prep_only_flag) {
+        print STDERR "\n\n\t** CMDS written to file: $cmd_file, stopping here due to --prep_only flag being set.\n\n";
+        exit(0);
+    }
 
-} else {
-    print STDERR "Sorry, no searches to perform.  Results already exist here\n";
+    my $cache_file = "$cmd_file.hpc-cache_success";
+    
+    my $grid_runner = new HPC::GridRunner($grid_conf_file, $cache_file);
+    my $ret = $grid_runner->run_on_grid(@cmds);
+        
+    if ($ret) {
+        
+        print STDERR "Error, not all commands could complete successfully...\n\n";
+        
+        exit(1);
+    }
+    else {
+        ## all good
+        print STDERR "SUCESS:  all commands completed succesfully. :)\n\n";
+        
+        exit(0);
+    }
+        
 }
-## Cleanup
+
 
 exit(0);
 
