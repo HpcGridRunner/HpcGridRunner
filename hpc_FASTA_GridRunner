@@ -2,74 +2,78 @@
 
 use strict;
 use FindBin;
-use lib ("FindBin::Bin/../PerlLib", "$FindBin::Bin/PerlLib");
+use lib ("$FindBin::Bin/PerlLib");
 use Fasta_reader;
-use Getopt::Std;
+use Getopt::Long qw(:config posix_default no_ignore_case bundling pass_through);
 use strict;
 use Carp;
 use Cwd;
-use Bsub;
+use HPC::GridRunner;
 use List::Util qw (shuffle);
+use File::Basename;
 
-our ($opt_d, $opt_q, $opt_s, $opt_Q, $opt_b, $opt_p, $opt_O, $opt_h, $opt_c, $opt_B, $opt_X, $opt_M, $opt_S, $opt_o);
-
-&getopts ('dq:s:bp:O:hbc:B:Q:XM:S:o:');
 
 my $usage =  <<_EOH_;
 
-############################# Options #######################################################
+############################# Options ##################################################################################
 #
 # Required:
-# -q query multiFastaFile (full or relative path)
 #
-# -p program command line template:   eg. "/path/to/prog [opts] __QUERY_FILE__ [other opts]"
+#   --query_fasta|Q <string>       query multiFastaFile (full or relative path)
 #
-# -o outdir
+#   --cmd_template|T <string>      program command line template:   eg. "/path/to/prog [opts] __QUERY_FILE__ [other opts]"
 #
-# -X commands only!  don't launch.
+#   --seqs_per_bin|N <int>                      number of sequences per partition.
+# 
+#   --out_dir|O <string>           output directory 
 #
-###################### Process Args and Options ############################################
+# Optional:
+#
+#   --prep_only|X                  partion data and create cmds list, but don't launch on the grid.
+#
+#
+###################### Process Args and Options ########################################################################
+
 
 _EOH_
 
     
     ;
 
+my $query_fasta_file;
+my $program_cmd_template;
+my $bin_size;
+my $help = 0;
+my $CMDS_ONLY = 0;
+my $out_dir;
+my $prep_only_flag = 0;
+
+&GetOptions('query_fasta|Q=s' => \$query_fasta_file,
+            'cmd_template|T=s' => \$program_cmd_template,
+            'seqs_per_bin|N=i' => \$bin_size,
+            'out_dir|O=s' => \$out_dir,
+            'prep_only|X' => \$prep_only_flag,
+    );
+
+
 
 if ($opt_h) {
     die $usage;
 }
 
-my $CMDS_ONLY = $opt_X;
-
-my $bin_size = $opt_B || 5000;
-
-my $queue = $opt_Q || "week";
-
-our $DEBUG = $opt_d;
-
-my $CMDS_PER_NODE = $opt_c;
-
-my $num_seqs_per_job = $opt_S || 1;
-
-unless ($opt_q && $opt_p && $opt_o) {
+unless ($query_fasta_file && $program_cmd_template && $bin_size && $out_dir) {
     die $usage;
 }
 
-my $queryFile = $opt_q;
 unless ($queryFile =~ /^\//) {
     $queryFile = cwd() . "/$queryFile";
 }
 
-my $program_cmd_template = $opt_p;
+
 unless ($program_cmd_template =~ /__QUERY_FILE__/) {
     die "Error, program cmd template must include '__QUERY_FILE__' placeholder in the command";
 }
 
-
-my $memory = $opt_M || 4000;
-
-my $out_dir = $opt_o;
 
 ## Create files to search
 
