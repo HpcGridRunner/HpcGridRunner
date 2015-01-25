@@ -26,7 +26,23 @@ BEGIN {
     
 }
 
-our $PARAFLY_FLAG = 0;  ## set to 1 if you want to use ParaFly to try to rexecute any grid-failed commands as a second try before reporting them as complete failures.
+my $PARAFLY_PROG;
+
+## static method:
+sub use_parafly {
+    my $parafly_prog = `which ParaFly`;
+    unless ($parafly_prog =~ /\w/) {
+        confess "Error, cannot find ParaFly.  Please be sure that ParaFly is installed in yuor PATH env setting. ";
+    }
+    chomp $parafly_prog;
+    
+    $PARAFLY_PROG = $parafly_prog;
+    
+    print STDERR "* Found ParaFly installed at: $parafly_prog\n\n";
+    
+    return;
+}
+    
 
 
 ####
@@ -174,7 +190,7 @@ sub run_on_grid {
         }
         close $ofh;
         
-        if ($PARAFLY_FLAG) {
+        if ($PARAFLY_PROG) {
             ## try running them via parafly
             print STDERR "\n\nTrying to run them using parafly...\n\n";
             return($self->run_parafly($cache_failed_cmds));
@@ -198,13 +214,7 @@ sub run_parafly {
     
     my $num_cpus = $ENV{OMP_NUM_THREADS} || 1;
 
-    my $parafly_prog = `which ParaFly`;
-    unless ($parafly_prog =~ /\w/) {
-        confess "Error, cannot find ParaFly.  Please be sure that ParaFly is installed in yuor PATH env setting. ";
-    }
-    chomp $parafly_prog;
-    
-    my $cmd = "$parafly_prog -c $cmds_file_for_parafly -CPU $num_cpus -v -shuffle -failed_cmds $cmds_file_for_parafly.FAILED_DURING_PARAFLY";
+    my $cmd = "$PARAFLY_PROG -c $cmds_file_for_parafly -CPU $num_cpus -v -shuffle -failed_cmds $cmds_file_for_parafly.FAILED_DURING_PARAFLY";
     
     my $ret = system($cmd);
 

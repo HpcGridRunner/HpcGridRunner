@@ -56,7 +56,7 @@ if ($help_flag) {
 }
 
 if ($parafly_flag) {
-    $HPC::GridRunner::PARAFLY_FLAG = 1;
+    &HPC::GridRunner::use_parafly();
 }
 
 
