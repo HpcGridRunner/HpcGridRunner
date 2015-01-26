@@ -15,6 +15,7 @@ my @files_to_keep = qw (cleanme.pl
                        test_hpc_gridrunner_LSF.pl
                        test.pep
                        test_BioIfx_fasta_general.sh
+                       test_BioIfx_hmmscan_pfam.sh
 
 );
 
