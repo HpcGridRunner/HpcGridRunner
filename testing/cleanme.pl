@@ -13,12 +13,15 @@ chdir $FindBin::Bin or die "error, cannot cd to $FindBin::Bin";
 
 my @files_to_keep = qw (cleanme.pl 
                        test_hpc_gridrunner_LSF.pl
+                       test.pep
+                       test_BioIfx_fasta_general.sh
+
 );
 
 my %keep = map { + $_ => 1 } @files_to_keep;
 
 `rm -rf ./farmit*`;
-
+`rm -rf ./fa_test/`;
 
 foreach my $file (<*>) {
 	

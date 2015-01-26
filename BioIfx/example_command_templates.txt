@@ -1,0 +1,8 @@
+
+## example for hmmscan search of Pfam
+
+--cmd_template "hmmscan --cpu 8 --domtblout __QUERY_FILE__.domtblout /seq/RNASEQ/DBs/PFAM/current/Pfam-A.hmm __QUERY_FILE__"
+
+
+## example for blastp search of uniref90
+

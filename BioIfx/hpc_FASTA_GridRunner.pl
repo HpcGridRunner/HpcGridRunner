@@ -33,6 +33,7 @@ my $usage =  <<_EOH_;
 #
 #   --prep_only|X                  partion data and create cmds list, but don't launch on the grid.
 #
+#   --parafly                      use parafly to re-exec previously failed grid commands
 #
 ###################### Process Args and Options ########################################################################
 
