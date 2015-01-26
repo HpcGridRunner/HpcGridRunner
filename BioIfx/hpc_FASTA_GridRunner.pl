@@ -122,7 +122,7 @@ while (my $fastaSet = &get_next_fasta_entries($fastaReader, $bin_size) ) {
 
 print STDERR "Sequences to search: @searchFileList\n";
 my $numFiles = @searchFileList;
-print STDERR "There are $numFiles blast search jobs to run.\n";
+print STDERR "There are $numFiles jobs to run.\n";
 
 my $curr_dir = cwd;
 

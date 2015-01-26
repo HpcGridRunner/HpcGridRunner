@@ -23,6 +23,7 @@ my %keep = map { + $_ => 1 } @files_to_keep;
 
 `rm -rf ./farmit*`;
 `rm -rf ./fa_test/`;
+`rm -rf ./test_pfam_search/`;
 
 foreach my $file (<*>) {
 	
