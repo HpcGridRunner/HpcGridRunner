@@ -6,3 +6,5 @@
 
 ## example for blastp search of uniref90
 
+--cmd_template "blastp -query __QUERY_FILE__ -db /seq/RNASEQ/DBs/SWISSPROT/current/uniprot_sprot.fasta  -max_target_seqs 1 -outfmt 6 -evalue 1e-5 -num_threads 2"
+

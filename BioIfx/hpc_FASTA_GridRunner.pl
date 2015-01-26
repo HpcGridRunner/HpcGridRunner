@@ -15,7 +15,7 @@ use File::Basename;
 
 my $usage =  <<_EOH_;
 
-############################# Options ##################################################################################
+#######################################################################################################################
 #
 # Required:
 #
@@ -35,7 +35,7 @@ my $usage =  <<_EOH_;
 #
 #   --parafly                      use parafly to re-exec previously failed grid commands
 #
-###################### Process Args and Options ########################################################################
+########################################################################################################################
 
 
 _EOH_
@@ -174,7 +174,7 @@ if  ($numFiles) {
     }
     else {
         ## all good
-        print STDERR "SUCESS:  all commands completed succesfully. :)\n\n";
+        print STDERR "SUCCESS:  all commands completed succesfully. :)\n\n";
         
         exit(0);
     }
