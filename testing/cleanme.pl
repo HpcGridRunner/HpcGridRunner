@@ -18,6 +18,8 @@ my @files_to_keep = qw (cleanme.pl
                        test_BioIfx_hmmscan_pfam.sh
 
 test_BioIfx_blastp.sh
+test_BioIfx_hmmscan_pfam.parafly_only.sh
+
 );
 
 my %keep = map { + $_ => 1 } @files_to_keep;
