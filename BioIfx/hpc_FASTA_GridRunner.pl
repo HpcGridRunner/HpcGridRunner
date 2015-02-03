@@ -23,17 +23,22 @@ my $usage =  <<_EOH_;
 #
 #   --cmd_template|T <string>      program command line template:   eg. "/path/to/prog [opts] __QUERY_FILE__ [other opts]"
 #
-#  --grid_conf|G <string>          grid config file (see hpc_conf/ for examples)
-#
 #   --seqs_per_bin|N <int>         number of sequences per partition.
 # 
 #   --out_dir|O <string>           output directory 
+#
+#  And:
+#
+#      --grid_conf|G <string>          grid config file (see hpc_conf/ for examples)
+#   Or
+#      --parafly_only <int>             run locally using ParaFly (set to number of parallel processes)
 #
 # Optional:
 #
 #   --prep_only|X                  partion data and create cmds list, but don't launch on the grid.
 #
-#   --parafly                      use parafly to re-exec previously failed grid commands
+#   --parafly                      use parafly to re-exec previously failed grid commands (use with --grid_conf)
+#   
 #
 ########################################################################################################################
 
@@ -51,6 +56,9 @@ my $CMDS_ONLY = 0;
 my $out_dir;
 my $prep_only_flag = 0;
 my $grid_conf_file;
+my $parafly_only = 0;
+my $parafly_flag = 0;
+
 
 &GetOptions('query_fasta|Q=s' => \$query_fasta_file,
             'cmd_template|T=s' => \$program_cmd_template,
@@ -59,7 +67,8 @@ my $grid_conf_file;
             'prep_only|X' => \$prep_only_flag,
             'grid_conf|G=s' => \$grid_conf_file,
             
-
+            'parafly_only=i' => \$parafly_only,
+            'parafly' => \$parafly_flag,
             'help|h' => \$help,
 
     );
@@ -70,7 +79,7 @@ if ($help) {
     die $usage;
 }
 
-unless ($query_fasta_file && $program_cmd_template && $bin_size && $out_dir && $grid_conf_file) {
+unless ($query_fasta_file && $program_cmd_template && $bin_size && $out_dir && ($parafly_only || $grid_conf_file) ) {
     die $usage;
 }
 
@@ -81,6 +90,11 @@ unless ($query_fasta_file =~ /^\//) {
 
 unless ($program_cmd_template =~ /__QUERY_FILE__/) {
     die "Error, program cmd template must include '__QUERY_FILE__' placeholder in the command";
+}
+
+
+if ($parafly_flag) {
+    &HPC::GridRunner::use_parafly();
 }
 
 
@@ -98,6 +112,14 @@ mkdir $out_dir or die "Error, cannot mkdir $out_dir";
 my $bindir = "$out_dir/grp_" . sprintf ("%04d", $current_bin);
 mkdir ($bindir) or die "Error, cannot mkdir $bindir";
 
+my $ParaFlyProg = "";
+if ($parafly_only) {
+    $ParaFlyProg = `which ParaFly`;
+    unless ($ParaFlyProg =~ /\w/) {
+        die "Error, cannot find ParaFly program. Be sure it's in your PATH setting. \n";
+    }
+    chomp $ParaFlyProg;
+}
 
 while (my $fastaSet = &get_next_fasta_entries($fastaReader, $bin_size) ) {
     
@@ -161,24 +183,40 @@ if  ($numFiles) {
         exit(0);
     }
 
-    my $cache_file = "$cmd_file.hpc-cache_success";
-    
-    my $grid_runner = new HPC::GridRunner($grid_conf_file, $cache_file);
-    my $ret = $grid_runner->run_on_grid(@cmds);
+
+    if ($parafly_only) {
+
+        my $cmd = "$ParaFlyProg -c $cmd_file -CPU $parafly_only -shuffle -v";
+        my $ret = system($cmd);
+        if ($ret) {
+            die "Error, cmd: $cmd died with ret $ret";
+        }
+        exit(0); # successe
         
-    if ($ret) {
-        
-        print STDERR "Error, not all commands could complete successfully...\n\n";
-        
-        exit(1);
+
     }
     else {
-        ## all good
-        print STDERR "SUCCESS:  all commands completed succesfully. :)\n\n";
+    
         
-        exit(0);
+        my $cache_file = "$cmd_file.hpc-cache_success";
+        
+        my $grid_runner = new HPC::GridRunner($grid_conf_file, $cache_file);
+        my $ret = $grid_runner->run_on_grid(@cmds);
+        
+        if ($ret) {
+            
+            print STDERR "Error, not all commands could complete successfully...\n\n";
+            
+            exit(1);
+        }
+        else {
+            ## all good
+            print STDERR "SUCCESS:  all commands completed succesfully. :)\n\n";
+            
+            exit(0);
+        }
+        
     }
-        
 }
 
 
