@@ -102,10 +102,18 @@ if ($parafly_flag) {
 
 my $fastaReader = new Fasta_reader($query_fasta_file);
 
+
+my $curr_dir = cwd;
+
 my @searchFileList;
 
 my $count = 0;
 my $current_bin = 1;
+
+unless ($out_dir =~ m|^/|) {
+    # provide full path
+    $out_dir = "$curr_dir/$out_dir";
+}
 
 mkdir $out_dir or die "Error, cannot mkdir $out_dir";
 
@@ -146,15 +154,13 @@ print STDERR "Sequences to search: @searchFileList\n";
 my $numFiles = @searchFileList;
 print STDERR "There are $numFiles jobs to run.\n";
 
-my $curr_dir = cwd;
 
 if  ($numFiles) {
     
     my @cmds;
     ## formulate blast commands:
     foreach my $searchFile (@searchFileList) {
-        $searchFile = "$curr_dir/$searchFile";
-        
+                
         my $cmd = $program_cmd_template;
         $cmd =~ s/__QUERY_FILE__/$searchFile/g;
         
