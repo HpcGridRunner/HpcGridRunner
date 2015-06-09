@@ -35,8 +35,6 @@ sub submit_job_to_grid {
     ## submit the command, do any additional job administration as required, such as capturing job ID
 
     my $cmd = $self->{config}->{cmd} or confess "Error, need cmd from config file";
-    
-    $cmd .= "-d .  -j oe -N $shell_script ";
 
     $cmd .= " $shell_script 2>&1 ";
         
