@@ -19,6 +19,8 @@ my @files_to_keep = qw (cleanme.pl
 
 test_BioIfx_blastp.sh
 test_BioIfx_hmmscan_pfam.parafly_only.sh
+test_hpc_gridrunner_SGE.pl
+test_hpc_gridrunner_PBS.pl
 
 );
 
