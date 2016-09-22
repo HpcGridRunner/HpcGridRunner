@@ -1,5 +1,6 @@
-package HPC::PBS_handler;
+package HPC::PBSPro_handler;
 
+use File::Basename;
 use strict;
 use warnings;
 use base qw(HPC::Base_handler);
@@ -36,7 +37,9 @@ sub submit_job_to_grid {
 
     my $cmd = $self->{config}->{cmd} or confess "Error, need cmd from config file";
     
-    $cmd .= " -d .  -j oe -N $shell_script ";
+    my $idx = rindex($cmd, "/");
+    my $jobName = substr($cmd, $idx+1);
+    $cmd .= " -j oe -N $jobName ";
 
     $cmd .= " $shell_script 2>&1 ";
     
@@ -50,7 +53,7 @@ sub submit_job_to_grid {
     
     my $ret = $?;
     
-    print STDERR "\nPBS job (ret=$ret), text:: $job_id_text\n";
+    print STDERR "\nPBSPro job (ret=$ret), text:: $job_id_text\n";
     
 
     if ($ret) {

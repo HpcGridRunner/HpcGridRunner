@@ -36,8 +36,8 @@ sub submit_job_to_grid {
 
     my $cmd = $self->{config}->{cmd} or confess "Error, need cmd from config file";
     
-    $cmd .= " -e $shell_script.stderr -o $shell_script.stdout $shell_script 2>&1 ";
-    
+    $cmd .= " $shell_script 2>&1 ";
+        
 
     my $job_id_text = `$cmd`;
     #print STDERR "\nSGE: $job_id_text\n";
@@ -46,7 +46,7 @@ sub submit_job_to_grid {
     
 
     if ($ret) {
-        print STDERR "FARMIT failed to accept job: $cmd\n (ret $ret)\n$job_id_text\n";
+        print STDERR "FARMIT failed to accept job: [$cmd]\n (ret $ret)\n$job_id_text\n";
         return(-1);
     }
     else {
