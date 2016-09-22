@@ -9,13 +9,13 @@ use Cwd;
 ####
 sub new {
     my $packagename = shift;
-    my $config_href = shift;
+    my $config_obj = shift;
     
-    unless (ref $config_href) {
+    unless (ref $config_obj) {
         confess "Error, need config href as param";
     }
         
-    my $self = {config => $config_href};
+    my $self = {config => $config_obj};
     
     bless($self, $packagename);
 
@@ -33,7 +33,7 @@ sub submit_job_to_grid {
 
     ## submit the command, do any additional job administration as required, such as capturing job ID
 
-    my $cmd = $self->{config}->{cmd} or confess "Error, need grid cmd template from config";
+    my $cmd = $self->{config}->get_value('GRID', 'cmd') or confess "Error, need grid cmd template from config";
     
     $cmd .= " -e $shell_script.stderr -o $shell_script.stdout ";
         
