@@ -93,7 +93,7 @@ sub new {
     }
 
     my $self = { handler => $handler,
-                 config => $config,
+                 config => $config_obj,
                  cache_completed_cmds_file => $cache_completed_cmds_file,
              };
     
@@ -146,7 +146,7 @@ sub run_on_grid {
 
     my %params = ( cmds => \@cmds,
                    handler => $self->{handler},
-                   shell_header => $config_obj->get_value("GRID", "shell_header");
+                   shell_header => $config_obj->get_value("GRID", "shell_header")
         );
     
     

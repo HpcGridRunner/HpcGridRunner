@@ -3,6 +3,7 @@ package HPC::Base_handler;
 use strict;
 use warnings;
 use Carp;
+use IniReader;
 
 # basic interface required for implementing a Farm handler.
 

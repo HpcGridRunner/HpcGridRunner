@@ -7,6 +7,7 @@ use Carp;
 
 use Data::Dumper;
 
+my $DEBUG = 0;
 
 sub new {
     my $packagename = shift;
@@ -32,7 +33,7 @@ sub new {
     $conf_text =~ s/ +/ /g;
     
     
-    print "CONF_TEXT:\n$conf_text\n";
+    print STDERR "CONF_TEXT:\n$conf_text\n" if $DEBUG;
     
     my $current_section = "";
     
@@ -42,9 +43,9 @@ sub new {
         if ($line =~ /^\[([^\]]+)\]/) {
             $current_section = $1;
             $current_section = &_trim_flank_ws($current_section);
-            print STDERR "Got section: $current_section\n";
+            print STDERR "Got section: $current_section\n" if $DEBUG;
         }
-        elsif ($line =~ /^(.*)=(.*)$/) {
+        elsif ($line =~ /^([^=]+)=(.*)$/) {
             my $att = $1;
             my $val = $2;
             
@@ -52,11 +53,11 @@ sub new {
             $val = &_trim_flank_ws($val);
             $self->{section_to_att_val}->{$current_section}->{$att} = $val;
 
-            #print "ATT ($att) => VAL ($val)\n";
+            print STDERR "ATT ($att) => VAL ($val)\n" if $DEBUG;
             
         }
         else {
-            #print STDERR "Ignoring conf file line: $_\n";
+            print STDERR "Ignoring conf file line: $_\n" if $DEBUG;
         }
     }
     close $fh;
