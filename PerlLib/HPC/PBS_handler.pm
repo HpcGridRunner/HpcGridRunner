@@ -90,7 +90,11 @@ sub job_running_or_pending_on_grid {
     foreach my $line (split(/\n/, $response)) {
         my @x = split(/\s+/, $line);
 	my $lcl_job_id = $x[0];
+<<<<<<< HEAD
 	if ($x[0] =~ /(\d+)(\.[0-9a-zA-Z])*/) {
+=======
+	if ($x[0] =~ /(\d+)(\.[0-9a-zA-Z]*)*/) {
+>>>>>>> 630dc1544217726a0051a276e88fa32a15f57ce3
 	    $lcl_job_id = $1;
 	}
         if ($lcl_job_id eq $job_id) {
