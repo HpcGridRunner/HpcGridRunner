@@ -6,6 +6,7 @@ use Carp;
 use List::Util qw (shuffle);
 use FindBin;
 use Cwd;
+use IniReader;
 
 use HPC::FarmIt;
 use HPC::LSF_handler;
@@ -55,42 +56,32 @@ sub new {
     unless ($config_file) {
         confess "Error, need config file as parameter";
     }
+
+    my $config_obj = IniReader->new($config_file);
     
-    my %config;
-    open (my $fh, $config_file) or confess "Error, cannot open file: $config_file";
-    while (<$fh>) {
-        chomp;
-        unless (/\w/) { next; }
-        if (/^\#/) { next; }
-        
-        my ($tok, $val) = split(/=/, $_, 2);
-        $config{$tok} = $val;
-    }
-    close $fh;
-
-    use Data::Dumper;
-    print STDERR Dumper(\%config);
-
-    my $grid_type = $config{grid} or confess "Error, grid type not specified in config file: $config_file";
+    
+    
+    my $grid_type = $config_obj->get_value('GRID', 'gridtype') or confess "Error, grid type not specified in config file: $config_file";
+    
     unless ($grid_type =~ /^(LSF|SGE|SLURM|PBS|PBSPro)$/) {
         confess "Error, grid type: $grid_type is not currently supported";
     }
     
     my $handler;
     if ($grid_type eq "LSF") {
-        $handler = HPC::LSF_handler->new(\%config);
+        $handler = HPC::LSF_handler->new($config_obj);
     }
     elsif ($grid_type eq "SGE") {
-        $handler = HPC::SGE_handler->new(\%config);
+        $handler = HPC::SGE_handler->new($config_obj);
     }
     elsif ($grid_type eq "SLURM") {
-        $handler = HPC::SLURM_handler->new(\%config);
+        $handler = HPC::SLURM_handler->new($config_obj);
     }
     elsif ($grid_type eq "PBS") {
-        $handler = HPC::PBS_handler->new(\%config);
+        $handler = HPC::PBS_handler->new($config_obj);
     }
     elsif ($grid_type eq "PBSPro") {
-        $handler = HPC::PBSPro_handler->new(\%config);
+        $handler = HPC::PBSPro_handler->new($config_obj);
     }
     else {
         confess "Error, grid type: $grid_type is not supported";
@@ -102,12 +93,12 @@ sub new {
     }
 
     my $self = { handler => $handler,
-                 config => \%config,
+                 config => $config,
                  cache_completed_cmds_file => $cache_completed_cmds_file,
              };
     
     bless($self, $packagename);
-
+    
     return($self);
 }
     
@@ -150,21 +141,25 @@ sub run_on_grid {
     
     @cmds = shuffle @cmds;
 
+
+    my $config_obj = $self->{config};
+
     my %params = ( cmds => \@cmds,
                    handler => $self->{handler},
-                   );
-
+                   shell_header => $config_obj->get_value("GRID", "shell_header");
+        );
     
-
+    
+    
     if ($cache_completed_cmds_file) {
         open (my $ofh, ">>$cache_completed_cmds_file") or die "Error, cannot append to file $cache_completed_cmds_file";
         $params{cache_success_cmds_ofh} = $ofh;
     }
     
-    if (my $max_nodes = $self->{config}->{max_nodes}) {
+    if (my $max_nodes = $config_obj->get_value('GRID', 'max_nodes')) {
         $params{max_nodes} = $max_nodes;
     }
-    if (my $cmds_per_node = $self->{config}->{cmds_per_node}) {
+    if (my $cmds_per_node = $config_obj->get_value('GRID', 'cmds_per_node')) {
         $params{cmds_per_node} = $cmds_per_node;
     }
 

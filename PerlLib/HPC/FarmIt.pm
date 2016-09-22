@@ -138,6 +138,7 @@ sub new {
         nodes_in_progress => {},
         handler => $handler,
         
+        shell_header => $params_href->{shell_header},
         
         
                 
@@ -245,7 +246,7 @@ sub _submit_job {
     open (my $fh, ">$shell_script") or die $!;
     print $fh "#!/bin/sh\n\n";
     
-    &_write_minimal_environment($fh);
+    $self->_write_minimal_environment($fh);
     
     my $num_cmds_written = 0;
 
@@ -517,11 +518,15 @@ sub clean_logs {
 
 
 sub _write_minimal_environment {
-    my ($fh) = @_;
+    my ($self, $fh) = @_;
 
+    if (my $shell_header = $self->{shell_header}) {
+        print $fh $shell_header;
+    }
+    
+
+    # good to know what host it's running on.... log it.
     print $fh <<_EOFENV_;
-
-## add any special environment settings
 
 echo HOST: \$HOSTNAME
 echo HOST: \$HOSTNAME >&2

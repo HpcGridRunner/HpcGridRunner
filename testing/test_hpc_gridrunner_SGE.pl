@@ -7,7 +7,7 @@ use lib ("$FindBin::Bin/../PerlLib");
 
 use HPC::GridRunner;
 
-my $config_file = "$FindBin::Bin/../hpc_conf/BroadInst_SGE_UGER.conf";
+my $config_file = "$FindBin::Bin/../hpc_conf/BroadInst_UGER.short.25.conf";
 
 if (@ARGV) {
     &HPC::GridRunner::use_parafly();
