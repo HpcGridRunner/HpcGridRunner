@@ -82,8 +82,9 @@ sub job_running_or_pending_on_grid {
     #print STDERR "Response:\n$response\n";
 
     foreach my $line (split(/\n/, $response)) {
+        $line =~ s/^\s+//;
         my @x = split(/\s+/, $line);
-
+        
         if ($x[0] eq $job_id) {
             my $state = $x[4];
             
@@ -93,7 +94,7 @@ sub job_running_or_pending_on_grid {
         }
     }
     
-    print STDERR "-no record of job_id $job_id, setting as state unknown\n";
+    print STDERR "-warning, no record of job_id $job_id via qstat ... may be transitioning to finished.\n";
     return undef; # no status info
 
 }    
