@@ -253,6 +253,9 @@ sub _submit_job {
     my $monitor_started = "$monitor_dir/$num_cmds_launched.started";
     my $monitor_finished = "$monitor_dir/$num_cmds_launched.finished";
 
+    print $fh "\n# batch starting at index $num_cmds_launched\n";
+    print $fh  "touch $monitor_started\n\n";
+            
     my @cmd_indices_prepped;
     
     while ($num_cmds_launched < $num_cmds && $num_cmds_written < $cmds_per_node) {
@@ -269,7 +272,6 @@ sub _submit_job {
 		}
 
         print $fh "## Command index $next_cmd_index\n"
-            . "touch $monitor_started\n"
             . "$cmd_string\n"
             . 'echo $? >> ' . "$retval_subdir/entry_$next_cmd_index.ret\n\n";
         
