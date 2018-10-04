@@ -67,7 +67,7 @@ my $parafly_flag = 0;
             'prep_only|X' => \$prep_only_flag,
             'grid_conf|G=s' => \$grid_conf_file,
             
-            'parafly_only=i' => \$parafly_only,
+            'parafly_only' => \$parafly_only,
             'parafly' => \$parafly_flag,
             'help|h' => \$help,
 
@@ -80,6 +80,16 @@ if ($help) {
 }
 
 unless ($query_fasta_file && $program_cmd_template && $bin_size && $out_dir && ($parafly_only || $grid_conf_file) ) {
+
+    print "Missing a parameter.  Values we have are:\n"
+        . "query_fasta_file: $query_fasta_file\n"
+        . "program_cmd_template: $program_cmd_template\n"
+        . "bin_size: $bin_size\n"
+        . "out_dir: $out_dir\n"
+        . "  parafly_only: $parafly_only\n"
+        . "  grid_conf_file: $grid_conf_file\n\n"
+        . "and \@ARGV = @ARGV\n\n";
+
     die $usage;
 }
 
