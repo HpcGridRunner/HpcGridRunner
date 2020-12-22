@@ -86,7 +86,7 @@ sub new {
 
     umask(0000);
     
-    my $host = hostname
+    my $host = hostname;
     # required:
     my $cmds_list_aref = $params_href->{cmds} or confess "No commands specified";
     my $handler = $params_href->{handler} or confess "Need handler specified";
